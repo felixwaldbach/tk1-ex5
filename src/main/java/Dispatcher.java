@@ -54,5 +54,8 @@ public class Dispatcher implements Runnable {
 	private int getRandomNumber(int uBound, int lBound) {
 		return ((int)(Math.random() * ((uBound - lBound) + 1)) + lBound);
 	}
+	
+	// startSnapshot
+	// send marker message over c1 and c2
 
 }
