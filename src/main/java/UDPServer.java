@@ -32,7 +32,10 @@ public class UDPServer implements Runnable {
             ByteArrayInputStream in = new ByteArrayInputStream(data);
             ObjectInputStream is = new ObjectInputStream(in);
             try {
+            	//TODO
             	// check if the message is airplanes or a marker message
+            	// if marker message
+
             	
             	// if airplanes
             	String[] airplanes = (String[]) is.readObject();
@@ -40,6 +43,7 @@ public class UDPServer implements Runnable {
             	hangar.addAirplanes(airplanes);
             	
             	// if marker message
+            	
             	// start recording
             	// when receiving the second marker message print the count of airplanes
             } catch (ClassNotFoundException e) {

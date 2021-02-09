@@ -1,16 +1,22 @@
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+ * A Hangar is responsible for managing airplanes, and adding random airplanes in queues.
+ */
 public class Hangar implements Runnable {
 	
+	// the identifier of hanger: H1, H2, H3, ...
 	private String identifier;
+	// the identifiers of adjacent hangers
 	String h1, h2;
 	private List<String> airplanes;
 	
+	// storages for channel 1 and 2
 	private FIFOList c1;
 	private FIFOList c2;
 	
- 
+	
 	public Hangar(String identifier, String h1, String h2) {
 		System.out.println("Hangar " + identifier + " entering the system. Adding initial airplanes...");
 		airplanes = new ArrayList<>();
@@ -22,6 +28,7 @@ public class Hangar implements Runnable {
 		c1 = new FIFOList();
 		c2 = new FIFOList();
 		
+		// Add initial 10 airplanes
 		for(int i=0; i<10; i++) {
 			airplanes.add(identifier + "_AIR_" + i);
 		}
@@ -43,22 +50,26 @@ public class Hangar implements Runnable {
 		
 		String[] randomAirplanes = new String[randomAmount];
 		
+		// remove planes from airplanes, add them to randomAirplanes
 		for(int i=0; i<randomAmount; i++) {
 			if(airplanes.size() == 0) {
-				break;
+				break; 
 			}
 			int randomIndex = getRandomNumber(airplanes.size() - 1, 0);
 			randomAirplanes[i] = airplanes.get(randomIndex);
 			airplanes.remove(randomIndex);
 		}
 		
+		
 		if(randomChannel == 0) {
 			MainWindow.historyListModel.addElement("Transfer: " + identifier + " -> " + h1 + " (" +randomAmount+ ")");
-			System.out.println("Hangar " + identifier + " sends "+ randomAmount + " airplanes to Hangar " +h1+ "...");
+			System.out.println("Hangar " + identifier + " puts "+ randomAmount + " airplanes to Hangar " +h1+ " in queue...");
+			// put randomAirplanes in queue of channel 1
 			c1.enqueue(randomAirplanes);
 		} else {
 			MainWindow.historyListModel.addElement("Transfer: " + identifier + " -> " + h2 + " (" +randomAmount+ ")");
-			System.out.println("Hangar " + identifier + " sends "+ randomAmount + " airplanes to Hangar " +h2+ "...");
+			System.out.println("Hangar " + identifier + " puts "+ randomAmount + " airplanes to Hangar " +h2+ " in queue...");
+			// put randomAirplanes in queue of channel 2
 			c2.enqueue(randomAirplanes);
 		}
 	}
@@ -97,6 +108,11 @@ public class Hangar implements Runnable {
 		return this.h2;
 	}
 	
+	public int getNumOfPlane() {
+		return this.airplanes.size();
+	}
+	
+	// add new airplanes to the airline array of hanger
 	public void addAirplanes(String [] airplanes) {
 		System.out.println("Hangar " + identifier + " received airplanes :");
 		for(String a: airplanes) {

@@ -4,6 +4,8 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class UDPClient {
@@ -34,5 +36,15 @@ public class UDPClient {
                 sendByte, sendByte.length, serverAddress, port);
         
         this.udpSocket.send(sendPacket);               
+    }
+    
+    public void sendMarkerMessage() throws IOException {
+    	String marker = "CL_algorithm_start";
+    	byte[] sendByte = marker.getBytes();
+    	
+    	DatagramPacket sendPacket = new DatagramPacket(
+    			sendByte, sendByte.length, serverAddress, port);
+    	
+    	this.udpSocket.send(sendPacket);
     }
 }
