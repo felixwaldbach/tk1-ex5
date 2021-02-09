@@ -11,11 +11,11 @@ import java.util.Scanner;
 public class UDPClient {
 
 	private static String hostUrl = "127.0.0.1";
+	private static String MARKER = "CL_algorithm_start";
 	
     private DatagramSocket udpSocket;
     private InetAddress serverAddress;
     private int port;
-    private Scanner scanner;
     
     public UDPClient(int port) throws IOException {
         this.serverAddress = InetAddress.getByName(hostUrl);
@@ -39,12 +39,17 @@ public class UDPClient {
     }
     
     public void sendMarkerMessage() throws IOException {
-    	String marker = "CL_algorithm_start";
-    	byte[] sendByte = marker.getBytes();
+        
+    	ByteArrayOutputStream fos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(MARKER);
+        oos.close();
+        
+    	byte[] sendByte = MARKER.getBytes();
     	
     	DatagramPacket sendPacket = new DatagramPacket(
     			sendByte, sendByte.length, serverAddress, port);
     	
     	this.udpSocket.send(sendPacket);
     }
-}
+}  

@@ -28,7 +28,7 @@ public class Dispatcher implements Runnable {
 		while(true) {
 			int randomChannel = getRandomNumber(1, 0);
 			if(enableMarker) {
-				
+				enableMarker = false;
 				// send marker message to other hangars
 				try {
 					System.out.println("D" +identifier+ " sends marker message to " + hangar.getH1() + "...");
@@ -37,6 +37,7 @@ public class Dispatcher implements Runnable {
 					System.out.println("D" +identifier+ " sends marker message to " + hangar.getH2() + "...");
 					MainWindow.historyListModel.addElement("Marker: " + identifier + " -> " + h2);
 					c2.sendMarkerMessage();
+
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
