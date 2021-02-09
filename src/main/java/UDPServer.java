@@ -10,6 +10,8 @@ public class UDPServer implements Runnable {
     private DatagramSocket udpSocket;
     private int port;
     private Hangar hangar;
+    
+    public boolean recording = false;
  
     public UDPServer(int port, Hangar hangar) throws SocketException, IOException {
         this.port = port;
@@ -31,22 +33,37 @@ public class UDPServer implements Runnable {
             byte[] data = packet.getData();
             ByteArrayInputStream in = new ByteArrayInputStream(data);
             ObjectInputStream is = new ObjectInputStream(in);
-            try {
-            	// check if the message is airplanes or a marker message
-            	
-            	// if airplanes
-            	String[] airplanes = (String[]) is.readObject();
-            	System.out.println("String Array with Airplanes received = " + airplanes);
-            	hangar.addAirplanes(airplanes);
-            	
-            	// if marker message
-            	// start recording
-            	// when receiving the second marker message print the count of airplanes
-            } catch (ClassNotFoundException e) {
-            	e.printStackTrace();
-            }
+            String[] payload = (String[]) is.readObject();
+            // check if the message is airplanes or a marker message
+			// if marker message
+			// when receiving the second marker message print the count of airplanes
+			if(payload[0].equals("m")) {
+				if(recording) {
+					recording = false;
+					MainWindow.historyListModel.addElement("Snapshot Result at " + hangar.getIdentifier()+ ": " + hangar.getAirplanes().size());
+				} else {
+					// if receiving first marker start recording
+					recording = true;
+					// send marker messages to other channels
+					if(payload[1].equals("H1")) {
+						MainWindow.d1.startSnapshot();
+					} else if(payload[1].equals("H2")) {
+						MainWindow.d2.startSnapshot();
+					} else if(payload[1].equals("H3")) {
+						MainWindow.d3.startSnapshot();
+					}
+				}
+			} else {
+				// if airplanes
+				System.out.println("String Array with Airplanes received = " + payload);
+				hangar.addAirplanes(payload);	
+			}
             threadSleep(350);
         }
+    }
+    
+    public void setRecording(boolean recording) {
+    	this.recording = recording;
     }
 
 	@Override

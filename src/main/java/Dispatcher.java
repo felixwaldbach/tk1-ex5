@@ -6,13 +6,22 @@ public class Dispatcher implements Runnable {
 	private String identifier;
 	private UDPClient c1;
 	private UDPClient c2;
+	private UDPServer s1;
+	private UDPServer s2;
+	private String identC1;
+	private String identC2;
 	
-	public Dispatcher(Hangar hangar, UDPClient c1, UDPClient c2) {
+	
+	public Dispatcher(Hangar hangar, UDPClient c1, UDPClient c2, UDPServer s1, UDPServer s2, String identC1, String identC2) {
 		System.out.println("Dispatcher for hangar " +hangar.getIdentifier()+ "started...");
 		this.hangar = hangar;
 		this.identifier = hangar.getIdentifier();
 		this.c1 = c1;
 		this.c2 = c2;
+		this.s1 = s1;
+		this.s2 = s2;
+		this.identC1 = identC1;
+		this.identC2 = identC2;
 	}
 	
 	@Override
@@ -55,7 +64,15 @@ public class Dispatcher implements Runnable {
 		return ((int)(Math.random() * ((uBound - lBound) + 1)) + lBound);
 	}
 	
-	// startSnapshot
-	// send marker message over c1 and c2
+	public void sendMarkerMessages() throws IOException {
+		c1.sendMarkerMessage(identC1);
+		c2.sendMarkerMessage(identC2);
+	}
+	
+	public void startSnapshot() throws IOException {
+		this.sendMarkerMessages();
+		s1.setRecording(true);
+		s2.setRecording(true);
+	}
 
 }

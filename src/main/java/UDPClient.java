@@ -35,4 +35,19 @@ public class UDPClient {
         
         this.udpSocket.send(sendPacket);               
     }
+    
+    public void sendMarkerMessage(String identifier) throws IOException {
+    	ByteArrayOutputStream fos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(new String[] {"m", identifier});
+        oos.close();
+
+        // end serialization
+        byte[] sendByte = fos.toByteArray();
+
+        DatagramPacket sendPacket = new DatagramPacket(
+                sendByte, sendByte.length, serverAddress, port);
+        
+        this.udpSocket.send(sendPacket);     
+    }
 }

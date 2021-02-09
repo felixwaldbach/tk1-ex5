@@ -27,6 +27,8 @@ public class MainWindow extends JFrame {
 	private JLabel snapshot3Label;
 	private JButton snapshot3Button;
 	
+	public static Dispatcher d1, d2, d3;
+	
 	public static void main(String[] args) throws UnknownHostException, IOException {
 		MainWindow mainWindow = new MainWindow();
 		mainWindow.setVisible(true);
@@ -63,7 +65,7 @@ public class MainWindow extends JFrame {
 		// snapshot 2
 		snapshot2Label = new JLabel("Hangar 2 (#0)");
 		snapshot2Button = new JButton("Snapshot");
-		snapshot2Button.addActionListener(x -> snapshot(1));
+		snapshot2Button.addActionListener(x -> snapshot(2));
 
 		JPanel snapshot2 = new JPanel();
 		snapshot2.setLayout(new GridLayout(2, 1));
@@ -74,7 +76,7 @@ public class MainWindow extends JFrame {
 		// snapshot 3
 		snapshot3Label = new JLabel("Hangar 3 (#0)");
 		snapshot3Button = new JButton("Snapshot");
-		snapshot3Button.addActionListener(x -> snapshot(1));
+		snapshot3Button.addActionListener(x -> snapshot(3));
 
 		JPanel snapshot3 = new JPanel();
 		snapshot3.setLayout(new GridLayout(2, 1));
@@ -116,18 +118,34 @@ public class MainWindow extends JFrame {
 		UDPClient c31 = new UDPClient(3004);
 		UDPClient c32 = new UDPClient(3005);
 		
-		Dispatcher d1 = new Dispatcher(h1, c12, c13);
+		d1 = new Dispatcher(h1, c12, c13, s12, s13, "H2", "H3");
 		new Thread(d1).start();
-		Dispatcher d2 = new Dispatcher(h2, c21, c23);
+		d2 = new Dispatcher(h2, c21, c23, s21, s23, "H1", "H3");
 		new Thread(d2).start();
-		Dispatcher d3 = new Dispatcher(h3, c31, c32);
+		d3 = new Dispatcher(h3, c31, c32, s31, s32, "H1", "H2");
 		new Thread(d3).start();
 	}
 
 	private void snapshot(int snapshot) {
+		historyListModel.addElement("Snapshot ...");
 		// start snapshot at hangar snapshot
 		// call function in dispatcher
-		historyListModel.addElement("Snapshot ...");
+		try {
+			switch(snapshot) {
+				case 1:
+					d1.startSnapshot();
+					break;
+				case 2:
+					d2.startSnapshot();
+					break;
+				case 3:
+					d3.startSnapshot();
+					break;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

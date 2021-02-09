@@ -97,6 +97,10 @@ public class Hangar implements Runnable {
 		return this.h2;
 	}
 	
+	public List<String> getAirplanes() {
+		return this.airplanes;
+	}
+	
 	public void addAirplanes(String [] airplanes) {
 		System.out.println("Hangar " + identifier + " received airplanes :");
 		for(String a: airplanes) {
