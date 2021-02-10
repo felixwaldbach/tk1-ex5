@@ -14,10 +14,12 @@ public class Hangar implements Runnable {
 	private String identifier;
 	private String record;
 	private String sender;
-	private boolean markerReceived = false;
+	//private boolean markerReceived = false;
+	private Boolean[] markerReceived = new Boolean[] {false, false};
+	private Boolean[] markerSent = new Boolean[] {false, false};
+	private Boolean[] enableRecord = new Boolean[] {false, false};
 	private boolean initiator = false;
 	private boolean enableInitiate = true;
-	private boolean enableRecord = false;
 	private boolean recorded = false;
 	private String sessionId;
 	
@@ -134,14 +136,29 @@ public class Hangar implements Runnable {
 		return this.sender;
 	}
 	
-	public void setMarkerReceived(boolean markerReceived, String sender) {
+	public void setMarkerReceived(Boolean[] markerReceived, String sender) {
 		this.markerReceived = markerReceived;
 		this.sender = sender;
-		
 	}
 	
-	public boolean isMarkerReceived() {
+	public Boolean[] getMarkerReceived() {
 		return this.markerReceived;
+	}
+	
+	public void setMarkerSent(Boolean[] markerSent) {
+		this.markerSent = markerSent;
+	}
+	
+	public Boolean[] isMarkerSent() {
+		return this.markerSent;
+	}
+	
+	public Boolean[] isEnableRecord() {
+		return this.enableRecord;
+	}
+	
+	public void setEnableRecord (Boolean[] en) {
+		this.enableRecord = en;
 	}
 	
 	public void startSnapshop() {
@@ -151,20 +168,14 @@ public class Hangar implements Runnable {
     	setSessionId(UUID.randomUUID().toString());
     	
 		recordState();
-		setMarkerReceived(true, identifier); 
+		setMarkerReceived(new Boolean[] {true, true}, identifier); 
 		
 		this.initiator = true;
-		this.enableRecord = true;
+		this.enableRecord = new Boolean[] {true, true};
 		this.enableInitiate = true;
 	}
 	
-	public boolean isEnableRecord() {
-		return this.enableRecord;
-	}
 	
-	public void setEnableRecord (boolean en) {
-		this.enableRecord = en;
-	}
 	
 	public void setEnableInitiator (boolean ei) {
 		this.enableInitiate = ei;
