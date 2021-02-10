@@ -36,8 +36,7 @@ public class Dispatcher implements Runnable {
 			if(hangar.isMarkerReceived()) {
 				
 				sessionId = hangar.getSessionId();
-				hangar.setMarkerReceived(false, h1);
-				hangar.setMarkerReceived(false, h2);
+				hangar.setMarkerReceived(false, identifier);
 				// send marker message to other hangars
 				try {
 					System.out.println(identifier + " receives marker from sender " +hangar.getSender()+ "; h1:" + hangar.getH1() + "; h2:" + hangar.getH2());
