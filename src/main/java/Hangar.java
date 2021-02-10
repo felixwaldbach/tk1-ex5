@@ -1,13 +1,27 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.logging.Logger;
 
 /*
  * A Hangar is responsible for managing airplanes, and adding random airplanes in queues.
  */
 public class Hangar implements Runnable {
 	
+	Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+	
 	// the identifier of hanger: H1, H2, H3, ...
 	private String identifier;
+	private String record;
+	private String sender;
+	private boolean markerReceived = false;
+	private boolean initiator = false;
+	private boolean enableInitiate = true;
+	private boolean enableRecord = false;
+	private boolean recorded = false;
+	private String sessionId;
+	
+	
 	// the identifiers of adjacent hangers
 	String h1, h2;
 	private List<String> airplanes;
@@ -108,8 +122,76 @@ public class Hangar implements Runnable {
 		return this.h2;
 	}
 	
-	public int getNumOfPlane() {
-		return this.airplanes.size();
+	public void setRecord(String record) {
+		this.record = record;
+	}
+	
+	public String getRecord() {
+		return this.record;
+	}
+	
+	public String getSender() {
+		return this.sender;
+	}
+	
+	public void setMarkerReceived(boolean markerReceived, String sender) {
+		this.markerReceived = markerReceived;
+		this.sender = sender;
+		
+	}
+	
+	public boolean isMarkerReceived() {
+		return this.markerReceived;
+	}
+	
+	public void startSnapshop() {
+		
+		logger.info(identifier+ " initializes snapshot...");
+    	setEnableInitiator(false);
+    	setSessionId(UUID.randomUUID().toString());
+    	
+		recordState();
+		setMarkerReceived(true, identifier); 
+		
+		this.initiator = true;
+		this.enableRecord = true;
+		this.enableInitiate = true;
+	}
+	
+	public boolean isEnableRecord() {
+		return this.enableRecord;
+	}
+	
+	public void setEnableRecord (boolean en) {
+		this.enableRecord = en;
+	}
+	
+	public void setEnableInitiator (boolean ei) {
+		this.enableInitiate = ei;
+	}
+	
+	public boolean getEnableInitiator () {
+		return this.enableInitiate;
+	}
+	
+	public boolean isInitiator() {
+		return this.initiator;
+	}
+	
+	public void setRecorded (boolean r) {
+		this.recorded = r;
+	}
+	
+	public boolean isRecorded() {
+		return this.recorded;
+	}
+	
+	public void setSessionId(String id) {
+		this.sessionId = sessionId;
+	}
+	
+	public String getSessionId() {
+		return this.record;
 	}
 	
 	// add new airplanes to the airline array of hanger
@@ -120,6 +202,15 @@ public class Hangar implements Runnable {
 			this.airplanes.add(a);
 		}
 		System.out.print("\n");
+	}
+	
+	public void recordState() {
+		
+		record = identifier + ":" + Integer.toString(this.airplanes.size()) + ";";
+
+		setRecorded(true);
+		
+		logger.info(identifier+ " state recorded: " + record);
 	}
 	
 }

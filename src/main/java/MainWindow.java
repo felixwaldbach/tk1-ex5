@@ -28,6 +28,9 @@ public class MainWindow extends JFrame {
 	private JButton snapshot3Button;
 	
 	private Dispatcher d1, d2, d3;
+	private UDPServer s12,s13,s21,s23,s31,s32;
+	private UDPClient c12,c13,c21,c23,c31,c32;
+	private Hangar h1,h2,h3;
 	
 	public static void main(String[] args) throws UnknownHostException, IOException {
 		MainWindow mainWindow = new MainWindow();
@@ -87,39 +90,39 @@ public class MainWindow extends JFrame {
 		add(sidePanel, BorderLayout.EAST);
 		
 		// create 3 hangars and start the threads
-		Hangar h1 = new Hangar("H1", "H2", "H3");
+		h1 = new Hangar("H1", "H2", "H3");
 		new Thread(h1).start();
-		Hangar h2 = new Hangar("H2", "H1", "H3");
+		h2 = new Hangar("H2", "H1", "H3");
 		new Thread(h2).start();
-		Hangar h3 = new Hangar("H3", "H1", "H2");
+		h3 = new Hangar("H3", "H1", "H2");
 		new Thread(h3).start();
 		
 		// create UDP server for each channel
 		// s12 -> hangar 1 receives from hangar 2
-		UDPServer s12 = new UDPServer(3002, h1);
+		s12 = new UDPServer(3002, h1, "H2");
 		new Thread(s12).start();
-		UDPServer s13 = new UDPServer(3004, h1);
+		s13 = new UDPServer(3004, h1, "H3");
 		new Thread(s13).start();
-		UDPServer s21 = new UDPServer(3000, h2);
+		s21 = new UDPServer(3000, h2, "H1");
 		new Thread(s21).start();
-		UDPServer s23 = new UDPServer(3005, h2);
+		s23 = new UDPServer(3005, h2, "H3");
 		new Thread(s23).start();
-		UDPServer s31 = new UDPServer(3001, h3);
+		s31 = new UDPServer(3001, h3, "H1");
 		new Thread(s31).start();
-		UDPServer s32 = new UDPServer(3003, h3);
+		s32 = new UDPServer(3003, h3, "H2");
 		new Thread(s32).start();
 		
 		// create UDP client for each channel
 		// c12 -> hangar 1 sends to hangar 2
 		// tuple (sij, cji) use the same channel	
-		UDPClient c12 = new UDPClient(3000); //s21
-		UDPClient c13 = new UDPClient(3001); //s31
+		c12 = new UDPClient(3000); //s21
+		c13 = new UDPClient(3001); //s31
 		
-		UDPClient c21 = new UDPClient(3002); //s12
-		UDPClient c23 = new UDPClient(3003); //s32
+		c21 = new UDPClient(3002); //s12
+		c23 = new UDPClient(3003); //s32
 		
-		UDPClient c31 = new UDPClient(3004); //s13
-		UDPClient c32 = new UDPClient(3005); //s23
+		c31 = new UDPClient(3004); //s13
+		c32 = new UDPClient(3005); //s23
 		
 		// create 3 dispatchers for each hangar with their sending channels
 		d1 = new Dispatcher(h1, c12, c13);
@@ -131,16 +134,19 @@ public class MainWindow extends JFrame {
 	}
 
 	private void snapshot(int snapshot) {
-		// start snapshot at hangar snapshot
-		if (snapshot == 1) {
-			historyListModel.addElement("Snapshot: H1 initiator");
-			d1.setMarkerMessage(true);
-		} else if (snapshot == 2) {
-			historyListModel.addElement("Snapshot: H2 initiator");
-			d2.setMarkerMessage(true);
-		} else if (snapshot == 3) {
-			historyListModel.addElement("Snapshot: H3 initiator");
-			d3.setMarkerMessage(true);
+		switch(snapshot) {
+			case 1:
+				historyListModel.addElement("Snapshot: H1 initiator");
+				h1.startSnapshop();
+				break;
+			case 2:
+				historyListModel.addElement("Snapshot: H2 initiator");
+				h2.startSnapshop();
+				break;
+			case 3:
+				historyListModel.addElement("Snapshot: H3 initiator");
+				h2.startSnapshop();
+				break;
 		}
 	
 	}

@@ -7,11 +7,12 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import java.util.UUID;
 
 public class UDPClient {
 
 	private static String hostUrl = "127.0.0.1";
-	private static String MARKER = "CL_algorithm_start";
+	private static String MARKER = "m";
 	
     private DatagramSocket udpSocket;
     private InetAddress serverAddress;
@@ -38,18 +39,20 @@ public class UDPClient {
         this.udpSocket.send(sendPacket);               
     }
     
-    public void sendMarkerMessage() throws IOException {
-        
+    public void sendMarkerMessage(String initiator, String id, boolean back) throws IOException {
+    	
+    	
     	ByteArrayOutputStream fos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(fos);
-        oos.writeObject(MARKER);
+        oos.writeObject(new String[] {MARKER, id, initiator, String.valueOf(back)});
         oos.close();
-        
-    	byte[] sendByte = MARKER.getBytes();
-    	
-    	DatagramPacket sendPacket = new DatagramPacket(
-    			sendByte, sendByte.length, serverAddress, port);
-    	
-    	this.udpSocket.send(sendPacket);
+
+        // end serialization
+        byte[] sendByte = fos.toByteArray();
+
+        DatagramPacket sendPacket = new DatagramPacket(
+                sendByte, sendByte.length, serverAddress, port);
+
+        this.udpSocket.send(sendPacket);     
     }
 }  
