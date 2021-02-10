@@ -27,7 +27,6 @@ public class Dispatcher implements Runnable {
 	@Override
 	public void run() {
 		
-		
 		// The thread sends one item in channel queue each time
 		while(true) {
 			int randomChannel = getRandomNumber(1, 0);
@@ -36,85 +35,45 @@ public class Dispatcher implements Runnable {
 			if(hangar.getMarkerReceived()[0] || hangar.getMarkerReceived()[1]) {
 				if(hangar.getMarkerReceived()[0]) {
 					
-					sessionId = hangar.getSessionId();
 					hangar.setMarkerReceived(new Boolean[] {false, hangar.getMarkerReceived()[1]}, hangar.getSender());
 					
 					if(!hangar.isMarkerSent()[0]) {
+						System.out.println(identifier + " receives marker from sender " +hangar.getSender()+ "; h1:" + h1 + "; h2:" + h2);
+						
 						// send marker message to other h1
-						try {
-							System.out.println(identifier + " receives marker from sender " +hangar.getSender()+ "; h1:" + hangar.getH1() + "; h2:" + hangar.getH2());
-							if (hangar.getSender().contentEquals(h1)) {
-								
-								logger.info("D" +identifier+ " sends marker message to " + hangar.getH1() + "...");
-								//System.out.println("D" +identifier+ " sends marker message to " + hangar.getH1() + "...");
-								MainWindow.historyListModel.addElement("Marker: " + identifier + " -> " + h1);
-								c1.sendMarkerMessage(identifier,sessionId, true);
-
-							} else if (hangar.getSender().contentEquals(h2)){
-
-								logger.info("D" +identifier+ " sends marker message to " + hangar.getH1() + "...");
-								//System.out.println("D" +identifier+ " sends marker message to " + hangar.getH1() + "...");
-								MainWindow.historyListModel.addElement("Marker: " + identifier + " -> " + h1);
-								c1.sendMarkerMessage(identifier, sessionId, false);
-							} else {
-								
-								logger.info("D" +identifier+ " sends marker message to " + hangar.getH1() + "...");
-								//System.out.println("D" +identifier+ " sends marker message to " + hangar.getH1() + "...");
-								MainWindow.historyListModel.addElement("Marker: " + identifier + " -> " + h1);
-								c1.sendMarkerMessage(identifier, sessionId, false);
-
-							}
-							
-							hangar.setMarkerSent(new Boolean[] {true, hangar.isMarkerSent()[1]});
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+						sendMarkerMessage(c1, h1);
 					}
 				}
 				
 				if (hangar.getMarkerReceived()[1]) {
 					
-					sessionId = hangar.getSessionId();
 					hangar.setMarkerReceived(new Boolean[] {hangar.getMarkerReceived()[0], false}, hangar.getSender());
 					// send marker message to other hangar h2
+					sendMarkerMessage(c2, h2);
 					
-					if(!hangar.isMarkerSent()[1]) {
-						try {
-							System.out.println(identifier + " receives marker from sender " +hangar.getSender()+ "; h1:" + hangar.getH1() + "; h2:" + hangar.getH2());
-							if (hangar.getSender().contentEquals(h1)) {
-								
-								logger.info("D" +identifier+ " sends marker message to " + hangar.getH2() + "...");
-								//System.out.println("D" +identifier+ " sends marker message to " + hangar.getH2() + "...");
-								MainWindow.historyListModel.addElement("Marker: " + identifier + " -> " + h2);
-								c2.sendMarkerMessage(identifier,sessionId, false);
-							} else if (hangar.getSender().contentEquals(h2)){
-								
-								logger.info("D" +identifier+ " sends marker message to " + hangar.getH2() + "...");
-								//System.out.println("D" +identifier+ " sends marker message to " + hangar.getH2() + "...");
-								MainWindow.historyListModel.addElement("Marker: " + identifier + " -> " + h2);
-								c2.sendMarkerMessage(identifier, sessionId, true);
-
-							} else {
-
-								logger.info("D" +identifier+ " sends marker message to " + hangar.getH2() + "...");
-								//System.out.println("D" +identifier+ " sends marker message to " + hangar.getH2() + "...");
-								MainWindow.historyListModel.addElement("Marker: " + identifier + " -> " + h2);
-								c2.sendMarkerMessage(identifier, sessionId, false);
-							}
-							
-							hangar.setMarkerSent(new Boolean[] {hangar.isMarkerSent()[0], true});
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+				}
+			} else if (hangar.getSendState()){
+				
+				System.out.println("Initiator: " +hangar.getInitiator() + "; Identifier: " + identifier);
+				// send record to initiator
+				try {
+					if (hangar.getInitiator().contentEquals(h1)) {
+						c1.sendState(hangar.getRecord());
+						System.out.println("D" +identifier+ " sends state to " + h1 + "...");
+						
+					} else if (hangar.getInitiator().contentEquals(h2)){
+						c2.sendState(hangar.getRecord());
+						System.out.println("D" +identifier+ " sends state to " + h2 + "...");
 					}
-					
+					hangar.setSendState(false);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			} else if(randomChannel == 0 && hangar.getC1().size() > 0) {
 				// send first message to other hangar
 				try {
-					System.out.println("D" +identifier+ " sends airplanes to " + hangar.getH1() + "...");
+					System.out.println("D" +identifier+ " sends airplanes to " + h1 + "...");
 					
 					String[] airplanes = hangar.getC1().dequeue();
 					MainWindow.historyListModel.addElement("Transfer: " + identifier + " -> " + h1 + " (" +airplanes.length+ ")");
@@ -125,7 +84,7 @@ public class Dispatcher implements Runnable {
 				}
 			} else if(randomChannel == 1 && hangar.getC2().size() > 0) {
 				try {
-					System.out.println("D" +identifier+ " sends airplanes to " + hangar.getH2() + "...");
+					System.out.println("D" +identifier+ " sends airplanes to " + h2 + "...");
 					
 					String[] airplanes = hangar.getC2().dequeue();
 					MainWindow.historyListModel.addElement("Transfer: " + identifier + " -> " + h2 + " (" +airplanes.length+ ")");
@@ -153,9 +112,18 @@ public class Dispatcher implements Runnable {
 		return ((int)(Math.random() * ((uBound - lBound) + 1)) + lBound);
 	}
 	
-	
-	
-	// start Snapshot
-	// send marker message over c1 and c2
+	private void sendMarkerMessage(UDPClient c, String h) {
+
+		logger.info("D" +identifier+ " sends marker message to " + h + "...");
+		MainWindow.historyListModel.addElement("Marker: " + identifier + " -> " + h);
+		try {
+			c.sendMarkerMessage(hangar.getInitiator());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		hangar.setMarkerSent(new Boolean[] {true, hangar.isMarkerSent()[1]});
+		
+	}
 
 }

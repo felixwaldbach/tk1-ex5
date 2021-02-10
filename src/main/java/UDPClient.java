@@ -12,7 +12,6 @@ import java.util.UUID;
 public class UDPClient {
 
 	private static String hostUrl = "127.0.0.1";
-	private static String MARKER = "m";
 	
     private DatagramSocket udpSocket;
     private InetAddress serverAddress;
@@ -39,12 +38,11 @@ public class UDPClient {
         this.udpSocket.send(sendPacket);               
     }
     
-    public void sendMarkerMessage(String initiator, String id, boolean back) throws IOException {
-    	
+    public void sendMarkerMessage(String initiator) throws IOException {
     	
     	ByteArrayOutputStream fos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(fos);
-        oos.writeObject(new String[] {MARKER, id, initiator, String.valueOf(back)});
+        oos.writeObject(new String[] {"m", initiator});
         oos.close();
 
         // end serialization
@@ -54,5 +52,20 @@ public class UDPClient {
                 sendByte, sendByte.length, serverAddress, port);
 
         this.udpSocket.send(sendPacket);     
+    }
+    
+    public void sendState(String state) throws IOException {
+    	ByteArrayOutputStream fos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(new String[] {"s", state});
+        oos.close();
+
+        // end serialization
+        byte[] sendByte = fos.toByteArray();
+
+        DatagramPacket sendPacket = new DatagramPacket(
+                sendByte, sendByte.length, serverAddress, port);
+
+        this.udpSocket.send(sendPacket);   
     }
 }  

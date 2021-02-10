@@ -9,14 +9,10 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 public class UDPServer implements Runnable {
-	private static String MARKER = "m";
     private DatagramSocket udpSocket;
     private int port;
     private String partner, identifier;
-    private String record = "";
     private Hangar hangar;
-    private boolean enableRecord = false;
-    private String uuid = "";
     
     Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     
@@ -48,32 +44,33 @@ public class UDPServer implements Runnable {
             String[] payload = (String[]) is.readObject();
 
 			// check if the message is airplanes or a marker message
-			if (payload[0].equals(MARKER)) {
+			if (payload[0].contentEquals("m")) {
 				// if marker message
-				logger.severe(identifier + " received marker message from " + partner );
-				handleMarkerMessage(payload);
+				logger.severe(identifier + " received marker message from " + partner);
+				hangar.setInitiator(payload[1]);
+				handleMarkerMessage();
 					
+			} else if (payload[0].contentEquals("s")){
+
+				hangar.setRecord(hangar.getRecord()+ payload[1]);
+				MainWindow.historyListModel.addElement("Global State: " + hangar.getRecord());
 			} else {
 				
 				// if airplane                 
 			    System.out.println("String Array with Airplanes received = " + payload);
 			    hangar.addAirplanes(payload);
 			    
-			    // record
+			    // record the message
 			    if (hangar.getH1().equals(partner)) {
 			    	if(hangar.isEnableRecord()[0]) {
-				    	record = hangar.getRecord() + "C<" + identifier + "," + partner + ">:" + payload + ";";
-				    	hangar.setRecord(record);
+				    	hangar.setRecord(hangar.getRecord() + "C<" + identifier + "," + partner + ">:<" + Integer.toString(payload.length) + ">;");
 				    }
 		    	} else {
 		    		if(hangar.isEnableRecord()[1]) {
-				    	record = hangar.getRecord() + "C<" + identifier + "," + partner + ">:" + payload + ";";
-				    	hangar.setRecord(record);
+				    	hangar.setRecord(hangar.getRecord() + "C<" + identifier + "," + partner + ">:<" + Integer.toString(payload.length) + ">;");
 				    }
 		    	}
-			    
-			    
-			    	
+
 			    is.close();
 
 			}
@@ -99,15 +96,13 @@ public class UDPServer implements Runnable {
 		}
 	}
 	
-	public void handleMarkerMessage(String[] payload) {
-		
-		
+	public void handleMarkerMessage() {
+	
 		if (!hangar.isMarkerSent()[0] && !hangar.isMarkerSent()[1]) {
 			
 			//record current state of the hangar
 			hangar.recordState();
-			record = hangar.getRecord() + "C<" + identifier + "," + partner + ">: ;";
-	    	hangar.setRecord(record);
+	    	hangar.setRecord(hangar.getRecord() + "C<" + identifier + "," + partner + ">:<>;");
 	    	
 	    	hangar.setMarkerReceived(new Boolean[] {true, true}, partner);
 	    	
@@ -121,49 +116,22 @@ public class UDPServer implements Runnable {
 
 			hangar.setMarkerReceived(new Boolean[] {false, false}, partner);
 			
-			logger.info("Channel " + partner + " -> " + identifier+ " state recorded: " + hangar.getRecord());
-			
-			record = "";
-
+			if (hangar.getH1().equals(partner)) {
+	    		hangar.setEnableRecord(new Boolean[] {false, hangar.isEnableRecord()[1]});
+	    	} else {
+	    		hangar.setEnableRecord(new Boolean[] {hangar.isEnableRecord()[0], false});
+	    	}
+			logger.info(identifier + " first channel: "+ !hangar.isEnableRecord()[0] + "; second channel:" + !hangar.isEnableRecord()[1]);
 			logger.info("C<" + partner + "," + identifier + ">" + " state recorded.");
+			
+			if (!hangar.isEnableRecord()[0] && !hangar.isEnableRecord()[1]) {
+				if (hangar.getInitiator().equals(identifier)) {
+					MainWindow.historyListModel.addElement("Global State: " + hangar.getRecord());
+				} else {
+					hangar.setSendState(true);
+				}
+			}
 		}
-		
-		
-		
-		/*
-		logger.info("[A back message?] " + payload[3]);
-		
-		System.out.println(identifier + ": [A back message?] " + payload[3] +"; Is recorded? " + hangar.isRecorded());
-		if(!Boolean.parseBoolean(payload[3])) {
-			
-			hangar.setSessionId(payload[1]);
-			
-			if(!hangar.isRecorded()) {
-				//record current state of the hangar
-				hangar.recordState();
-				record = hangar.getRecord() + "C<" + identifier + "," + partner + ">: ;";
-		    	hangar.setRecord(record);
-		    	
-		    	hangar.setEnableRecord(false);
-		    	hangar.setMarkerReceived(new Boolean[] {true, true}, partner);
-			} else {
-				hangar.setEnableRecord(false);
-				hangar.setMarkerReceived(new Boolean[] {false, false}, partner);
-			}
-	    	
-		} else {
-			hangar.setEnableRecord(false);
-			hangar.setMarkerReceived(new Boolean[] {false, false}, partner);
-			
-			
-			logger.info("Channel " + partner + " -> " + identifier+ " state recorded: " + hangar.getRecord());
-			
-			record = "";
-			
-			if(!hangar.getMarkerReceived()[0] && !hangar.getMarkerReceived()[1]) {
-				logger.info(identifier + " end the algorithm");
-			}
-		}*/
 		
 	}
 }
